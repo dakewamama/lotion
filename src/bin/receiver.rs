@@ -1,5 +1,6 @@
 use anyhow::Result;
 use lotion::GossipMessage;
+use std::time::Instant;
 use tokio::net::UdpSocket;
 
 const BIND_ADDR: &str = "127.0.0.1:9000";
@@ -29,20 +30,30 @@ async fn main() -> Result<()> {
             }
         };
 
-        if message.verify() {
+        let verify_start = Instant::now();
+        let valid = message.verify();
+        let verify_elapsed = verify_start.elapsed();
+
+        if valid {
             verified += 1;
             println!(
-                "[{}] from {} | {} bytes | sender={:?} | wallclock={} | payload={:?} | VERIFIED",
+                "[{}] from {} | {} bytes | verify {:.2}ms | sender={:?} | payload={:?} | VERIFIED",
                 received,
                 src,
                 len,
+                verify_elapsed.as_secs_f64() * 1000.0,
                 String::from_utf8_lossy(&message.data.sender),
-                message.data.wallclock,
                 String::from_utf8_lossy(&message.data.payload),
             );
         } else {
             failed += 1;
-            println!("[{}] from {} | {} bytes | VERIFICATION FAILED", received, src, len);
+            println!(
+                "[{}] from {} | {} bytes | verify {:.2}ms | VERIFICATION FAILED",
+                received,
+                src,
+                len,
+                verify_elapsed.as_secs_f64() * 1000.0
+            );
         }
 
         if received % 10 == 0 {
