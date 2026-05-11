@@ -14,4 +14,7 @@ fn main() {
     println!("done");
     println!("pubkey: {:?}", pubkey);
     println!("signature length: {} bytes", std::mem::size_of_val(&signature));
+
+    let is_valid = signature.verify(message, &pubkey);
+    println!("signature valid: {}", is_valid);
 }
