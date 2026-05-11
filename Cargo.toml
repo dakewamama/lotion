@@ -1,9 +1,14 @@
 [package]
 name = "lotion"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 description = "Post-quantum signed gossip primitive for Solana. Hash-based Winternitz signatures over UDP."
 license = "MIT"
+authors = ["dakewamama"]
+repository = "https://github.com/dakewamama/lotion"
+readme = "README.md"
+keywords = ["solana", "post-quantum", "winternitz", "gossip"]
+categories = ["cryptography", "network-programming"]
 
 [dependencies]
 solana-winternitz = "0.1.1"
