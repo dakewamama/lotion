@@ -17,3 +17,7 @@ anyhow = "1"
 [[bin]]
 name = "sender"
 path = "src/bin/sender.rs"
+
+[[bin]]
+name = "receiver"
+path = "src/bin/receiver.rs"
