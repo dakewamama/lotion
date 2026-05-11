@@ -10,17 +10,22 @@ use solana_winternitz::{
 /// Total signature size: 32 hash chains × HASH_LENGTH bytes each.
 pub const SIGNATURE_BYTES: usize = HASH_LENGTH * 32;
 
-/// Mirrors the shape of Solana's CrdsValue:
-/// a signature over a data payload, plus a hash for deduplication.
+/// Public key size: same shape as signature.
+pub const PUBKEY_BYTES: usize = HASH_LENGTH * 32;
+
+///mirroring CrdsValue shape 
+/// we can use this to serialize/deserialize signatures for gossip
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GossipMessage {
     #[serde(with = "serde_big_array::BigArray")]
     pub signature: [u8; SIGNATURE_BYTES],
+    #[serde(with = "serde_big_array::BigArray")]
+    pub pubkey: [u8; PUBKEY_BYTES],
     pub data: GossipData,
     pub hash: [u8; HASH_LENGTH],
 }
 
-/// ContactInfo-style payload for a gossip message.
+///contactInfo-style data for gossip
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GossipData {
     pub sender: Vec<u8>,
@@ -29,10 +34,11 @@ pub struct GossipData {
 }
 
 impl GossipMessage {
-    /// Build and sign a new gossip message with a Winternitz private key.
+    ///build and sign new gossip message using WOTS private key
     pub fn sign(privkey: &WinternitzPrivkey, data: GossipData) -> Self {
         let data_bytes = bincode::serialize(&data).expect("serialize gossip data");
         let signature: [u8; SIGNATURE_BYTES] = privkey.sign(&data_bytes).into();
+        let pubkey: [u8; PUBKEY_BYTES] = privkey.pubkey().into();
         let full_hash = hash(&data_bytes);
         let hash: [u8; HASH_LENGTH] = full_hash[..HASH_LENGTH]
             .try_into()
@@ -40,19 +46,21 @@ impl GossipMessage {
 
         Self {
             signature,
+            pubkey,
             data,
             hash,
         }
     }
 
-    /// Verify the signature against a public key.
-    pub fn verify(&self, pubkey: &WinternitzPubkey) -> bool {
+    ///verify signature using embedded WOTS public key
+    pub fn verify(&self) -> bool {
         let data_bytes = match bincode::serialize(&self.data) {
             Ok(b) => b,
             Err(_) => return false,
         };
 
         let signature = WinternitzSignature::from(self.signature);
-        signature.verify(&data_bytes, pubkey)
+        let pubkey = WinternitzPubkey::from(self.pubkey);
+        signature.verify(&data_bytes, &pubkey)
     }
 }

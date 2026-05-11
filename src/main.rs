@@ -4,7 +4,7 @@ use solana_winternitz::privkey::WinternitzPrivkey;
 fn main() {
     println!("generating keypair");
     let privkey = WinternitzPrivkey::generate();
-    let pubkey = privkey.pubkey();
+    // let pubkey = privkey.pubkey();
 
     println!("building gossip message");
     let data = GossipData {
@@ -20,7 +20,7 @@ fn main() {
     println!("signature size: {} bytes", msg.signature.len());
 
     println!("verifying");
-    if msg.verify(&pubkey) {
+    if msg.verify() {
         println!("signature valid");
     } else {
         println!("signature INVALID");
