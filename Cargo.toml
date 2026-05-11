@@ -1,0 +1,9 @@
+[package]
+name = "lotion"
+version = "0.1.0"
+edition = "2024"
+description = "Post-quantum signed gossip primitive for Solana. Hash-based Winternitz signatures over UDP."
+license = "MIT"
+
+[dependencies]
+solana-winternitz = "0.1.1"
